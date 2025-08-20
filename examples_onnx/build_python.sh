@@ -179,12 +179,21 @@ echo "Building TEN VAD Python extension..."
 if [[ "$BUILD_METHOD" == "cmake" ]]; then
     # CMake build
     echo "Using CMake build method"
-    BUILD_DIR="build_python"
+    BUILD_DIR="build"
     rm -rf "$BUILD_DIR"
     mkdir -p "$BUILD_DIR"
     cd "$BUILD_DIR"
 
-    cmake .. -f ../CMakeLists_python.txt -DORT_ROOT="$ORT_ROOT"
+    # Check if CMake is available
+    if ! command -v cmake &> /dev/null; then
+        echo "ERROR: CMake not found. Please install it:"
+        echo "  sudo apt update && sudo apt install cmake"
+        exit 1
+    fi
+
+    # Copy the Python CMakeLists file and configure
+    cp ../CMakeLists_python.txt ./CMakeLists.txt
+    cmake . -DORT_ROOT="$ORT_ROOT"
     make -j$(nproc)
 
     # Copy the built module back

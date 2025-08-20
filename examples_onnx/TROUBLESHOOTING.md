@@ -2,6 +2,8 @@
 
 ## Common Build Issues and Solutions
 
+These identified on **ARM64** running Ubuntu OS 24.04.2.
+
 ### 1. ModuleNotFoundError: No module named 'setuptools' or 'distutils'
 
 **Symptoms:**
@@ -163,11 +165,12 @@ python vad_demo.py ../examples/s0724-s0730.wav output.txt
 sudo apt install cmake build-essential python3-dev
 
 # 2. Create build directory
-mkdir build_python
-cd build_python
+mkdir build
+cd build
 
 # 3. Configure and build
-cmake .. -f ../CMakeLists_python.txt -DORT_ROOT=$HOME/onnxruntime-linux-aarch64-1.22.0
+cp ../CMakeLists_python.txt ./CMakeLists.txt
+cmake . -DORT_ROOT=$HOME/onnxruntime-linux-aarch64-1.22.0
 make -j$(nproc)
 
 # 4. Copy module back

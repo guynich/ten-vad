@@ -251,4 +251,4 @@ Licensed under the Apache License, Version 2.0
 
 # Next steps
 
-- [ ] debug cmake build
+- [x] debug cmake build
