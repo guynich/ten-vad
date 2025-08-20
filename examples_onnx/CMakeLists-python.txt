@@ -1,0 +1,87 @@
+cmake_minimum_required(VERSION 3.12)
+project(ten_vad_python)
+
+set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+# Detect architecture and set ONNX Runtime path
+execute_process(
+    COMMAND uname -m
+    OUTPUT_VARIABLE ARCH
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+)
+
+if(ARCH STREQUAL "x86_64")
+    set(ORT_DEFAULT "$ENV{HOME}/onnxruntime-linux-x64-1.22.0")
+elseif(ARCH STREQUAL "aarch64")
+    set(ORT_DEFAULT "$ENV{HOME}/onnxruntime-linux-aarch64-1.22.0")
+else()
+    message(FATAL_ERROR "Unsupported architecture: ${ARCH}")
+endif()
+
+# Allow override of ONNX Runtime path
+if(NOT DEFINED ORT_ROOT)
+    set(ORT_ROOT ${ORT_DEFAULT})
+endif()
+
+# Verify ONNX Runtime exists
+if(NOT EXISTS "${ORT_ROOT}/lib" OR NOT EXISTS "${ORT_ROOT}/include")
+    message(FATAL_ERROR "ONNX Runtime not found at: ${ORT_ROOT}")
+endif()
+
+message(STATUS "Architecture: ${ARCH}")
+message(STATUS "ONNX Runtime: ${ORT_ROOT}")
+
+# Find Python and pybind11
+find_package(Python COMPONENTS Interpreter Development REQUIRED)
+
+# Find pybind11 - use python from PATH (virtual environment)
+execute_process(
+    COMMAND python -c "import pybind11; print(pybind11.get_cmake_dir())"
+    OUTPUT_VARIABLE PYBIND11_DIR
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+    RESULT_VARIABLE RESULT
+)
+
+if(RESULT EQUAL 0)
+    list(APPEND CMAKE_PREFIX_PATH ${PYBIND11_DIR})
+    find_package(pybind11 REQUIRED)
+else()
+    message(FATAL_ERROR "pybind11 not found. Install with: pip install pybind11")
+endif()
+
+# Project paths
+get_filename_component(TEN_VAD_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../.. ABSOLUTE)
+set(SRC_DIR ${TEN_VAD_ROOT}/src)
+
+# Source files
+set(SOURCES
+    ${CMAKE_CURRENT_SOURCE_DIR}/../ten_vad_python.cc
+    ${SRC_DIR}/ten_vad.cc
+    ${SRC_DIR}/aed.cc
+    ${SRC_DIR}/biquad.cc
+    ${SRC_DIR}/fftw.c
+    ${SRC_DIR}/fscvrt.cc
+    ${SRC_DIR}/pitch_est.cc
+    ${SRC_DIR}/stft.cc
+)
+
+# Create Python module
+pybind11_add_module(ten_vad_python ${SOURCES})
+
+# Include directories
+target_include_directories(ten_vad_python PRIVATE
+    ${TEN_VAD_ROOT}/include
+    ${SRC_DIR}
+    ${ORT_ROOT}/include
+)
+
+# Link libraries
+target_link_directories(ten_vad_python PRIVATE ${ORT_ROOT}/lib)
+target_link_libraries(ten_vad_python PRIVATE onnxruntime)
+
+# Set RPATH for runtime
+set_target_properties(ten_vad_python PROPERTIES
+    INSTALL_RPATH "${ORT_ROOT}/lib"
+    BUILD_WITH_INSTALL_RPATH TRUE
+)

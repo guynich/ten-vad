@@ -1,254 +1,130 @@
-# TEN VAD Python Bindings
+# TEN VAD ONNX Examples
 
-This directory contains Python bindings for the TEN VAD (Voice Activity
-Detection) library using pybind11.
-
-Tested on ARM64 running Ubuntu 24.04.2 LTS with Python 3.12.3.
-
-## Overview
-
-The Python bindings provide a clean, easy-to-use interface to the TEN VAD C/C++
-library, allowing you to perform voice activity detection directly from Python
-with the power of ONNX Runtime.
-
-## Files
-
-- `ten_vad_python.cpp` - pybind11 wrapper implementation
-- `setup.py` - Python package build configuration (simple and robust)
-- `vad_demo.py` - Complete example script for audio processing
-- `build_python.sh` - Build script with automatic architecture detection
-- `requirements.txt` - Python dependencies
-- `CMakeLists_python.txt` - CMake build configuration (alternative to setuptools)
+This directory contains examples for TEN VAD using ONNX Runtime:
+- **C Demo**: Traditional C executable demo
+- **Python Bindings**: Modern Python API with CMake build
 
 ## Quick Start
 
-Assumes `ten-vad` repo is in user's home folder.
-
 ### 1. Prerequisites
 
-Get the basic build tools and ONNX Runtime.
-
+The build uses cmake and runs a virtual environment.
 ```bash
 sudo apt update
-sudo apt install python3-venv build-essential
+sudo apt install cmake build-essential python3-venv
 ```
 
-**ONNX Runtime:** Download the correct version for your architecture to your home folder:
+### 2. Install ONNX Runtime
+
+Download for your architecture to your home directory:
 - **ARM64**: [onnxruntime-linux-aarch64-1.22.0.tgz](https://github.com/microsoft/onnxruntime/releases/download/v1.22.0/onnxruntime-linux-aarch64-1.22.0.tgz)
 - **x86_64**: [onnxruntime-linux-x64-1.22.0.tgz](https://github.com/microsoft/onnxruntime/releases/download/v1.22.0/onnxruntime-linux-x64-1.22.0.tgz)
 
-Example for **ARM64**.
 ```bash
-sudo apt update
+cd
 sudo apt install curl
 
-cd
 curl -OL https://github.com/microsoft/onnxruntime/releases/download/v1.22.0/onnxruntime-linux-aarch64-1.22.0.tgz
-
-tar -zxvf onnxruntime-linux-aarch64-1.22.0.tgz
-rm onnxruntime-linux-aarch64-1.22.0.tgz
+tar -xzf onnxruntime-linux-aarch64-1.22.0.tgz
 ```
 
-### 2. Build the Extension
+### 3. Build
 
-The build script handles everything automatically:
-
+**For Python bindings:**
 ```bash
-cd
 cd ten-vad/examples_onnx
-./build_python.sh
+./build-and-deploy-python.sh
 ```
 
-**That's it!** The script automatically:
-- Creates virtual environment (if not already in one)
-- Detects your architecture and finds correct ONNX Runtime
-- Installs all Python dependencies
-- Creates ONNX model symlinks
-- Builds and tests the extension
-
-**Optional parameters:**
+**For C demo:**
 ```bash
-# Specify custom ONNX Runtime path
-./build_python.sh --ort-path /path/to/your/onnxruntime
-
-# Use CMake instead of setuptools
-./build_python.sh --cmake
-
-# Skip dependency installation (if already installed)
-./build_python.sh --skip-deps
-```
-
-### 3. Run the Demo
-
-The demo requires `numpy` package.
-
-```bash
-cd
-python3 -m venv venv_tenvad
-source ./venv_tenvad/bin/activate
-
 cd ten-vad/examples_onnx
-python3 -m pip install --upgrade pip
-python3 -m pip install numpy
+./build-and-deploy-linux.sh --ort-path ~/onnxruntime-linux-aarch64-1.22.0
 ```
 
+The Python build script automatically:
+- Creates virtual environment
+- Installs pybind11 and numpy
+- Detects architecture and finds ONNX Runtime
+- Builds with CMake
+- Creates necessary symlinks
+
+### 4. Use
+
+**Command Line Demo (matches C demo functionality):**
 ```bash
-# Basic usage.
-python3 vad_demo.py ../examples/s0724-s0730.wav output.txt
+# Basic usage - processes WAV file and outputs results
+python3 ten_vad_demo.py input.wav output.txt
 
-# With custom threshold.
-python3 vad_demo.py audio.wav results.txt --threshold 0.6
+# With custom threshold
+python3 ten_vad_demo.py input.wav output.txt --threshold 0.6
 
-# Frame-by-frame processing demo.
-python3 vad_demo.py audio.wav results.txt --frame-demo
+# Test with included sample
+python3 ten_vad_demo.py ../examples/s0724-s0730.wav out-python.txt
 ```
 
-## API Usage
-
-### Basic Example
-
+**Python API:**
 ```python
-import numpy as np
 import ten_vad_python
+import numpy as np
 
 # Create VAD instance
-vad = ten_vad_python.TenVAD(hop_size=256, threshold=0.5)
+vad = ten_vad_python.VAD(hop_size=256, threshold=0.5)
 
-# Process audio data (numpy array of int16)
-audio_data = np.array([...], dtype=np.int16)  # Your audio samples
-probabilities, flags = vad.process_audio(audio_data)
+# Process audio frame (must be exactly hop_size samples)
+audio_frame = np.array([...], dtype=np.int16)  # 256 samples
+probability, is_voice = vad.process(audio_frame)
 
-# Results:
-# - probabilities: float array with VAD confidence [0.0-1.0]
-# - flags: int array with binary decisions (0=no voice, 1=voice)
+print(f"Voice probability: {probability:.6f}")
+print(f"Is voice: {is_voice}")
 ```
 
-### Frame-by-Frame Processing
+## Example
 
 ```python
-import ten_vad_python
-
-vad = ten_vad_python.TenVAD(hop_size=256, threshold=0.5)
-
-# Process single frame (useful for real-time applications)
-frame = np.array([...], dtype=np.int16)  # Must be exactly hop_size samples
-probability, flag = vad.process_frame(frame)
-
-print(f"Voice probability: {probability:.3f}, Voice detected: {flag}")
-```
-
-### Complete Audio File Processing
-
-```python
+# ten_vad_demo.py
+import ten_vad
 import numpy as np
-import ten_vad_python
+import wave
 
-def process_wav_file(filename):
-    # Read your WAV file (16-bit PCM, preferably 16kHz)
-    # ... audio loading code ...
+# Load WAV file
+with wave.open('audio.wav', 'rb') as f:
+    frames = f.readframes(-1)
+    audio = np.frombuffer(frames, dtype=np.int16)
 
-    # Create VAD instance
-    vad = ten_vad_python.TenVAD(hop_size=256, threshold=0.5)
-
-    # Process entire audio
-    probabilities, flags = vad.process_audio(audio_data)
-
-    # Analyze results
-    voice_frames = np.sum(flags)
-    total_frames = len(flags)
-    voice_percentage = (voice_frames / total_frames) * 100
-
-    print(f"Voice detected in {voice_frames}/{total_frames} frames ({voice_percentage:.1f}%)")
-
-    return probabilities, flags
+# Process with VAD
+vad = ten_vad.VAD()
+prob, is_voice = vad.process(audio)
+print(f"Voice detected: {is_voice} (confidence: {prob:.2f})")
 ```
 
-## API Reference
+## Files
 
-### TenVAD Class
+**Python Bindings:**
+- `CMakeLists-python.txt` - Python module CMake configuration
+- `build-and-deploy-python.sh` - Python build script
+- `ten_vad_demo.py` - Python usage example
+- `ten_vad_python.cc` - Clean pybind11 wrapper
 
-#### Constructor
-```python
-TenVAD(hop_size=256, threshold=0.5)
+**C Demo:**
+- `CMakeLists.txt` - C demo CMake configuration
+- `build-and-deploy-linux.sh` - C demo build script
+
+## Manual Build
+
+If you prefer manual control:
+
+```bash
+# Create and activate virtual environment
+python3 -m venv venv
+source venv/bin/activate
+
+# Install dependencies
+pip install pybind11 numpy
+
+# Build
+mkdir build && cd build
+cmake .. -DORT_ROOT=/path/to/onnxruntime
+make -j$(nproc)
+cp ten_vad*.so ..
 ```
-- `hop_size`: Number of samples per frame (default: 256 = 16ms at 16kHz)
-- `threshold`: VAD threshold [0.0-1.0] (default: 0.5)
-
-#### Methods
-
-**`process_frame(audio_data)`**
-- Process a single audio frame
-- `audio_data`: numpy array of int16, must be exactly `hop_size` samples
-- Returns: `(probability, flag)` tuple
-
-**`process_audio(audio_data)`**
-- Process entire audio buffer
-- `audio_data`: numpy array of int16, length must be divisible by `hop_size`
-- Returns: `(probabilities, flags)` tuple of numpy arrays
-
-**`get_hop_size()`**
-- Returns the hop size
-
-**`get_threshold()`**
-- Returns the VAD threshold
-
-**`get_version()`**
-- Returns the TEN VAD library version
-
-#### Module Functions
-
-**`ten_vad_python.get_version()`**
-- Get library version string
-
-## Audio Requirements
-
-- **Format**: 16-bit PCM
-- **Sample Rate**: 16kHz (recommended, though other rates may work)
-- **Channels**: Mono (stereo will be converted to mono by averaging)
-- **Frame Size**: Audio length must be divisible by `hop_size`
-
-## Architecture Support
-
-The build system automatically detects your architecture:
-
-- **x86_64**: Uses `onnxruntime-linux-x64-1.22.0`
-- **aarch64/arm64**: Uses `onnxruntime-linux-aarch64-1.22.0`
-
-## Troubleshooting
-
-### Build Issues
-
-1. **Missing pybind11**: `pip3 install pybind11`
-2. **Missing numpy**: `pip3 install numpy`
-3. **Wrong ONNX Runtime**: Download the correct architecture version
-4. **Permission errors**: Make sure `build_python.sh` is executable
-
-### Runtime Issues
-
-1. **Import error**: Make sure the `.so` file is in the same directory
-2. **ONNX Runtime not found**: Check that the library path is correct
-3. **Audio format errors**: Ensure 16-bit PCM format
-
-### Performance Tips
-
-1. Use 16kHz audio for optimal performance
-2. Process in batches for better efficiency
-3. Consider the RTF (Real-Time Factor) for your use case
-
-## Examples
-
-See `vad_demo.py` for a complete example with:
-- WAV file reading
-- Error handling
-- Performance measurement
-- Results analysis
-- Both batch and frame-by-frame processing
-
-## License
-
-Copyright © 2025 Agora
-Licensed under the Apache License, Version 2.0
-
-# Next steps
-
-- [x] debug cmake build
