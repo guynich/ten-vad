@@ -13,6 +13,9 @@ include/__pycache__/
 __pycache__/
 examples/out.txt
 .DS_Store
-
-
-
+# Following for python binding build.
+ten_vad_python.cpython-312-aarch64-linux-gnu.so
+examples_onnx/build/
+examples_onnx/onnx_model
+examples_onnx/output.txt
+examples_onnx/venv_tenvad
