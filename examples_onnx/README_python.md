@@ -89,35 +89,41 @@ With custom threshold.
 python3 ten_vad_demo.py ../../examples/s0724-s0730.wav out-python-threshold.txt --threshold 0.6
 ```
 
+### Porting the demo
+
+Create a new folder and copy three artifacts.
+* `lib/` folder from `build-python`
+* `onnx_model/` folder from `src`
+* `ten_vad_demo.py` script from `examples_onnx`
+
+Run demo script with `pip install numpy`.
+
 ### Output comparison of Python extension module and compiled C
 
-The compiled C demo is created by `build-and-deploy-linux.sh`.
+The compiled C demo is created by `build-and-deploy-linux.sh`.  Both process
+VAD output results for the same WAV file speech.
 
-Running a diff shows some small magnitude differences with the probability
-outputs from `s0724-s0730.wav`.  For three out of twenty consecutive frames:
+Running a diff comparison:
+
+1. TEN-VAD voice activity `is_voice` flags are identical for all 476 frames in
+the WAV file.
+
+2. small magnitude differences with the probability outputs.  The difference is
+in the 6th decimal place (0.000001 scale): 440 frames (92.4%) of probability
+values are identical; 36 frames (7.6%) differ only in the 6th decimal place. For
+example, these three out of twenty consecutive frames are different.
 ```console
 Python:  [35] 0.728302, 1    vs    C: [35] 0.728301, 1    (diff: 0.000001)
 Python:  [42] 0.901945, 1    vs    C: [42] 0.901944, 1    (diff: 0.000001)
 Python:  [54] 0.585849, 1    vs    C: [54] 0.585848, 1    (diff: 0.000001)
 ```
-The difference is in the 6th decimal place (0.000001 scale) thus is not
-expected to have any functional impact in real VAD use cases.
 
-### Run the demo elsewhere
+3. Repeating with printing to 8 decimal place: the probability differences are
+in the 7th-8th decimal place (mean: 6 × 10⁻⁸, max: 5.9 × 10⁻⁷)
 
-Create new folder and copy artifacts.
-```bash
-cd && mkdir -p ten_vad_demo && cd ten_vad_demo
-
-cp -r ../ten-vad/examples_onnx/build-python/lib/ .
-cp -r ../ten-vad/src/onnx_model/ .
-cp ../ten-vad/examples_onnx/ten_vad_demo.py .
-
-# For numpy.
-source ../ten-vad/examples_onnx/build-python/venv/bin/activate
-
-python3 ten_vad_demo.py ../ten-vad/examples/s0724-s0730.wav out-python.txt
-```
+Conclusion: these tiny differences will not have any functional impact in real
+VAD use cases.  The Python extension module provides a faithful, high-quality
+interface to the TEN VAD C/C++ library.
 
 ## Python API example
 
