@@ -56,6 +56,10 @@ mv ten_vad_python*.so lib/
 
 # Copy demo script to build-python for easy testing
 cp ../ten_vad_demo.py .
+
+python3 ./ten_vad_demo.py ../../examples/s0724-s0730.wav out-python.txt
+
+deactivate
 cd ..
 
 echo "Build complete."
