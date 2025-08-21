@@ -102,6 +102,20 @@ With custom threshold.
 python3 ten_vad_demo.py ../examples/s0724-s0730.wav out-python-threshold.txt --threshold 0.6
 ```
 
+### Output comparison of Python extension module and compiled C
+
+The compiled C demo is created by `build-and-deploy-linux.sh`.
+
+Running a diff shows some small magnitude differences with the probability
+outputs from `s0724-s0730.wav`.  For three out of twenty consecutive frames:
+```console
+Python:  [35] 0.728302, 1    vs    C: [35] 0.728301, 1    (diff: 0.000001)
+Python:  [42] 0.901945, 1    vs    C: [42] 0.901944, 1    (diff: 0.000001)
+Python:  [54] 0.585849, 1    vs    C: [54] 0.585848, 1    (diff: 0.000001)
+```
+The difference is in the 6th decimal place (0.000001 scale) thus is not
+expected to have any functional impact in real VAD use cases.
+
 ## Python API
 
 ```python
