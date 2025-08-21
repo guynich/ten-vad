@@ -49,7 +49,7 @@ The Python build script automatically:
 
 ```bash
 cd ten-vad/examples_onnx
-./build-and-deploy-python.sh
+./build-and-deploy-linux-python.sh
 ```
 
 The compiled Python extension module is saved to `lib/` folder.
@@ -141,7 +141,7 @@ print(f"Is voice: {is_voice}")
 
 ## Files
 
-- `build-and-deploy-python.sh` - Build script
+- `build-and-deploy-linux-python.sh` - Build script
 - `CMakeLists-python.txt` - Python extension module CMake configuration
 - `ten_vad_demo.py` - Python usage example
 - `ten_vad_python.cc` - pybind11 wrapper

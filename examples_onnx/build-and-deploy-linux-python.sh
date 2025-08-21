@@ -9,7 +9,7 @@
 
 set -e
 
-echo "🔨 Building TEN VAD Python bindings (CMake)..."
+echo "Building TEN VAD Python bindings (CMake)..."
 
 # Check prerequisites
 if ! command -v cmake &> /dev/null; then
@@ -51,4 +51,4 @@ mkdir -p ../lib
 mv ten_vad_python*.so ../lib/
 cd ..
 
-echo "Build complete!"
+echo "Build complete."
