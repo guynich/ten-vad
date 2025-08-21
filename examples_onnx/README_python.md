@@ -4,7 +4,11 @@ This README describes linux build and demonstration of a Python extension
 module (`lib/ten_vad_python.cypython*.so`) with Python bindings for the TEN VAD
 C++/C library and ONNX runtime.
 
-These steps tested on ARM64 running Ubuntu 24.04.2 LTS with Python 3.12.3
+The build system is designed to work on these architectures.
+| Architecture    | Notes                                        |
+|-----------------|----------------------------------------------|
+| ARM64 (aarch64) | tested Ubuntu 24.04.2 LTS with Python 3.12.3 |
+| x64 (x86_64)    | should work                                  |
 
 ## 1. Prerequisites
 
@@ -20,7 +24,7 @@ Download for your architecture to your home directory:
 - **ARM64**: [onnxruntime-linux-aarch64-1.22.0.tgz](https://github.com/microsoft/onnxruntime/releases/download/v1.22.0/onnxruntime-linux-aarch64-1.22.0.tgz)
 - **x86_64**: [onnxruntime-linux-x64-1.22.0.tgz](https://github.com/microsoft/onnxruntime/releases/download/v1.22.0/onnxruntime-linux-x64-1.22.0.tgz)
 
-This can be automated with the following environment variables.
+This is automated with these environment variables.
  ```bash
 ARCH=$(uname -m) && echo "Architecture: $ARCH"
 ONNX_VER=1.22.0
@@ -138,7 +142,7 @@ examples_onnx
 └──ten_vad_demo.py
 ```
 
-For x64 architecture build.
+For x64 (x86_64) architecture build.
 ```console
 ├── lib
 │   └── ten_vad_python.cpython-312-x86_64-linux-gnu.so
