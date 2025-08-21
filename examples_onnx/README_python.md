@@ -128,7 +128,7 @@ print(f"Is voice: {is_voice}")
 - `ten_vad_demo.py` - Python usage example
 - `ten_vad_python.cc` - pybind11 wrapper
 
-Python usage example requires these files.
+Python usage example requires these files on ARM64 with Python 3.12.
 ```console
 examples_onnx
 ├── lib
@@ -136,4 +136,10 @@ examples_onnx
 ├── onnx_model
 │   └── ten-vad.onnx
 └──ten_vad_demo.py
-````
+```
+
+For x64 architecture build.
+```console
+├── lib
+│   └── ten_vad_python.cpython-312-x86_64-linux-gnu.so
+```
