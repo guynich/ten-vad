@@ -23,7 +23,8 @@ Download for your architecture to your home directory:
 - **ARM64**: [onnxruntime-linux-aarch64-1.22.0.tgz](https://github.com/microsoft/onnxruntime/releases/download/v1.22.0/onnxruntime-linux-aarch64-1.22.0.tgz)
 - **x86_64**: [onnxruntime-linux-x64-1.22.0.tgz](https://github.com/microsoft/onnxruntime/releases/download/v1.22.0/onnxruntime-linux-x64-1.22.0.tgz)
 
-This is automated with these environment variables.
+This is automated with these environment variables.  Additional testing done
+with `ONNX_VER=1.17.1`.
  ```bash
 ARCH=$(uname -m) && echo "Architecture: $ARCH"
 ONNX_VER=1.22.0
@@ -31,7 +32,7 @@ ONNX_VER=1.22.0
 cd
 sudo apt install curl
 
-curl -OL https://github.com/microsoft/onnxruntime/releases/download/v1.22.0/onnxruntime-linux-$ARCH-$ONNX_VER.tgz
+curl -OL https://github.com/microsoft/onnxruntime/releases/download/v$ONNX_VER/onnxruntime-linux-$ARCH-$ONNX_VER.tgz
 
 tar -xzf onnxruntime-linux-$ARCH-$ONNX_VER.tgz
 rm onnxruntime-linux-$ARCH-$ONNX_VER.tgz
@@ -41,16 +42,21 @@ rm onnxruntime-linux-$ARCH-$ONNX_VER.tgz
 
 ```bash
 cd ten-vad/examples_onnx
-./build-and-deploy-linux-python.sh
+./build-and-deploy-linux-python.sh --ort-path ~/onnxruntime-linux-$ARCH-$ONNX_VER
 ```
 
 The Python build script automatically:
 - Creates virtual environment in `venv/` with pybind11 and numpy
-- Detects architecture and finds ONNX Runtime
+- Detects architecture and auto-detects ONNX Runtime (or uses custom `--ort-path`)
 - Builds Python extension module in `lib/` folder with CMake
 - Creates necessary symlink to ONNX model file in `onnx_model/`
 - Copies demo script to build directory for easy testing
 - All artifacts are consolidated in `build-python/`
+
+Auto-detection paths for ONNX Runtime.
+- x86_64: `$HOME/onnxruntime-linux-x64-1.22.0`
+- aarch64: `$HOME/onnxruntime-linux-aarch64-1.22.0`
+For a different ONNX Runtime versions, use `--ort-path` option.
 
 Inspect the Python extension module.
 ```bash

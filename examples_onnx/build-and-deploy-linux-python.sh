@@ -9,6 +9,25 @@
 
 set -e
 
+# Parse --ort-path argument (optional)
+ORT_ROOT=""
+if [[ "$#" -ge 2 && "$1" == "--ort-path" ]]; then
+    ORT_ROOT="$2"
+    shift 2
+
+    if [[ ! -d "$ORT_ROOT" || ! -d "$ORT_ROOT/lib" || ! -d "$ORT_ROOT/include" ]]; then
+        echo "invalid onnxruntime library path: $ORT_ROOT" >&2
+        exit 1
+    fi
+    echo "Using ONNX Runtime path: $ORT_ROOT"
+elif [[ "$#" -ge 1 && "$1" == "--help" ]]; then
+    echo "usage: $0 [--ort-path <path_to_onnxruntime>]" >&2
+    echo "  --ort-path: Optional path to ONNX Runtime installation" >&2
+    echo "              If not provided, attempts auto-detection based on" >&2
+    echo "              architecture and v1.22.0" >&2
+    exit 0
+fi
+
 echo "Building TEN VAD Python bindings (CMake)..."
 
 # Check prerequisites
@@ -47,7 +66,11 @@ fi
 
 # Build with CMake
 echo "Building with CMake..."
-cmake .
+if [[ -n "$ORT_ROOT" ]]; then
+    cmake . -DORT_ROOT="$ORT_ROOT"
+else
+    cmake .
+fi
 make -j$(nproc)
 
 # Move module to lib directory within build-python
