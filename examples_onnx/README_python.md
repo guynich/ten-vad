@@ -74,8 +74,8 @@ rm -rf onnxruntime-linux-$ARCH-$ONNX_VER
 
 ## 4. Demo
 
-Run the demo from the build directory.  The demo requires `numpy`, which is
-already installed in the virtual environment created by the build script.
+Runs from the build directory.  The demo requires `numpy`, which is already
+installed in the virtual environment created by the build script.
 ```bash
 cd
 cd ten-vad/examples_onnx/build-python
@@ -102,6 +102,22 @@ Python:  [54] 0.585849, 1    vs    C: [54] 0.585848, 1    (diff: 0.000001)
 ```
 The difference is in the 6th decimal place (0.000001 scale) thus is not
 expected to have any functional impact in real VAD use cases.
+
+### Run the demo elsewhere
+
+Create new folder and copy artifacts.
+```bash
+cd && mkdir -p ten_vad_demo && cd ten_vad_demo
+
+cp -r ../ten-vad/examples_onnx/build-python/lib/ .
+cp -r ../ten-vad/src/onnx_model/ .
+cp ../ten-vad/examples_onnx/ten_vad_demo.py .
+
+# For numpy.
+source ../ten-vad/examples_onnx/build-python/venv/bin/activate
+
+python3 ten_vad_demo.py ../ten-vad/examples/s0724-s0730.wav out-python.txt
+```
 
 ## Python API example
 

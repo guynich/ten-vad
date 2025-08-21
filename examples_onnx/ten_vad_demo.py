@@ -8,7 +8,7 @@
 """
 TEN VAD Python demo - uses Python extension module with C++/C and ONNX runtime.
 
-Requires these files and folders in examples_onnx directory for ARM64.
+Requires these files and folders on ARM64.
 ├── lib
 │   └── ten_vad_python.cpython-312-aarch64-linux-gnu.so
 └── onnx_model
