@@ -6,15 +6,26 @@
 #  Refer to the "LICENSE" file in the root directory for more information.
 #
 """
-TEN VAD Python demo - matches C demo functionality
+TEN VAD Python demo - uses Python extension module with C++/C and ONNX runtime.
+
+Requires these files and folders in examples_onnx directory.
+├── lib
+│   └── ten_vad_python.cpython-312-aarch64-linux-gnu.so
+└── onnx_model
+    └── ten-vad.onnx
 """
 
 import argparse
+import os
 import sys
 import time
 import wave
 
 import numpy as np
+
+# Add lib directory to Python path
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), "lib"))
+
 import ten_vad_python
 
 
@@ -41,15 +52,13 @@ def main():
             # Get WAV file info
             sample_rate = wav_file.getframerate()
             n_channels = wav_file.getnchannels()
-            sample_width = wav_file.getsampwidth()
             n_frames = wav_file.getnframes()
-
-            # Read all frames
-            frames = wav_file.readframes(n_frames)
+            sample_width = wav_file.getsampwidth()
 
             # Convert to numpy array (assuming 16-bit samples)
             if sample_width == 2:  # 16-bit
-                audio_data = np.frombuffer(frames, dtype=np.int16)
+                audio_bytes = wav_file.readframes(n_frames)
+                audio_data = np.frombuffer(audio_bytes, dtype=np.int16)
             else:
                 print(f"Error: Unsupported sample width: {sample_width}")
                 return 1
@@ -61,23 +70,20 @@ def main():
                 print(f"Error: Unsupported number of channels: {n_channels}")
                 return 1
 
-            print(f"WAV file byte num: {len(frames)}")
-
             # Calculate total audio time in milliseconds
             total_audio_time = (len(audio_data) / sample_rate) * 1000.0
-            print(f"total_audio_time: {total_audio_time:.2f}(ms)")
+            print(f"Total audio time:  {total_audio_time:.0f} ms")
 
             # Calculate number of frames for processing
             frame_num = len(audio_data) // args.hop_size
-            print(f"Audio frame Num: {frame_num}")
+            print(f"Audio frame count: {frame_num}")
 
     except Exception as e:
         print(f"Error reading WAV file: {e}")
         return 1
 
     # Create VAD instance
-    print(f"tenvadsrc version: {ten_vad_python.VAD().version()}")
-    print(f"Using threshold: {args.threshold}")
+    print(f"Using threshold:   {args.threshold}")
     vad = ten_vad_python.VAD(hop_size=args.hop_size, threshold=args.threshold)
 
     # Process audio frame by frame
@@ -110,7 +116,7 @@ def main():
     rtf = use_time / total_audio_time
 
     print(
-        f"Consuming time: {use_time:.6f}(ms), audio-time: {total_audio_time:.2f}(ms), =====> RTF: {rtf:.6f}"
+        f"Took: {use_time:.1f}ms  Audio: {total_audio_time:.1f}ms  ==>  RTF: {rtf:.6f}"
     )
 
     # Write results to output file

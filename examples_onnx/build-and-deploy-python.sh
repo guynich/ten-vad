@@ -46,10 +46,9 @@ cp ../CMakeLists-python.txt ./CMakeLists.txt
 cmake .
 make -j$(nproc)
 
-# Copy module to parent directory
-cp ten_vad_python*.so ..
+# Move module to lib directory for better organization
+mkdir -p ../lib
+mv ten_vad_python*.so ../lib/
 cd ..
 
 echo "Build complete!"
-echo "Test with: python3 -c 'import ten_vad_python; print(\"Success!\")'"
-echo "Run demo with numpy: python3 ten_vad_demo.py ../examples/s0724-s0730.wav output.txt"
