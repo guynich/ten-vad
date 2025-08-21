@@ -15,7 +15,3 @@ examples/out.txt
 .DS_Store
 # Python extension module for TEN VAD C++/C and ONNX runtime.
 examples_onnx/build-python
-examples_onnx/lib
-examples_onnx/onnx_model
-examples_onnx/venv
-examples_onnx/out-python.txt

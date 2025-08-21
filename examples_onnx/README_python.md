@@ -1,8 +1,7 @@
 TEN VAD Python ONNX example
 
 This README describes linux build and demonstration of a Python extension
-module (`lib/ten_vad_python.cypython*.so`) with Python bindings for the TEN VAD
-C++/C library and ONNX runtime.
+module using Python bindings for TEN VAD C++/C source code and ONNX runtime.
 
 The build system is designed to work on these architectures.
 | Architecture    | Notes                                        |
@@ -40,28 +39,30 @@ rm onnxruntime-linux-$ARCH-$ONNX_VER.tgz
 
 ## 3. Build
 
-The Python build script automatically:
-- Creates virtual environment
-- Installs pybind11 and numpy
-- Detects architecture and finds ONNX Runtime
-- Builds Python extension module in lib/ folder with CMake
-- Creates necessary symlink to ONNX model file
-
 ```bash
 cd ten-vad/examples_onnx
 ./build-and-deploy-linux-python.sh
 ```
 
-The compiled Python extension module is saved to `lib/` folder.
+The Python build script automatically:
+- Creates virtual environment in `venv/` with pybind11 and numpy
+- Detects architecture and finds ONNX Runtime
+- Builds Python extension module in `lib/` folder with CMake
+- Creates necessary symlink to ONNX model file in `onnx_model/`
+- Copies demo script to build directory for easy testing
+- All artifacts are consolidated in `build-python/`
+
+Inspect the Python extension module.
 ```bash
-ls lib/
+ls build-python/lib/
 ```
 ```console
 ten_vad_python.cpython-312-aarch64-linux-gnu.so
 ```
 
-Test import.
+Test the import in the build directory.
 ```bash
+cd build-python
 python3 -c 'import sys; sys.path.insert(0, "lib"); import ten_vad_python; print("Import success!")'
 ```
 
@@ -73,33 +74,19 @@ rm -rf onnxruntime-linux-$ARCH-$ONNX_VER
 
 ## 4. Demo
 
-This command line Python demo matches the functionality of compiled C demo.
-e.g.: basic usage processes a WAV file and outputs results to text file.
-```bash
-python3 ten_vad_demo.py input.wav output.txt
-```
-
-The demo requires `numpy` package for handling audio from WAV file.  Create a
-virtual environment for this dependency.
+Run the demo from the build directory.  The demo requires `numpy`, which is
+already installed in the virtual environment created by the build script.
 ```bash
 cd
-python3 -m venv venv_demo
-source ./venv_demo/bin/activate
+cd ten-vad/examples_onnx/build-python
+source ./venv/bin/activate
 
-python3 -m pip install --upgrade pip
-python3 -m pip install numpy
-
-cd ten-vad/examples_onnx
-```
-
-Run the demo with included sample.
-```bash
-python3 ten_vad_demo.py ../examples/s0724-s0730.wav out-python.txt
+python3 ten_vad_demo.py ../../examples/s0724-s0730.wav out-python.txt
 ```
 
 With custom threshold.
 ```bash
-python3 ten_vad_demo.py ../examples/s0724-s0730.wav out-python-threshold.txt --threshold 0.6
+python3 ten_vad_demo.py ../../examples/s0724-s0730.wav out-python-threshold.txt --threshold 0.6
 ```
 
 ### Output comparison of Python extension module and compiled C
@@ -116,15 +103,17 @@ Python:  [54] 0.585849, 1    vs    C: [54] 0.585848, 1    (diff: 0.000001)
 The difference is in the 6th decimal place (0.000001 scale) thus is not
 expected to have any functional impact in real VAD use cases.
 
-## Python API
+## Python API example
 
 ```python
 import sys
 import os
 import numpy as np  # For audio handling
 
-# Add lib directory to Python path
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "lib"))
+# Add lib directory to Python path (from build-python/ directory)
+sys.path.insert(0, "lib")
+# Or from examples_onnx/ directory:
+# sys.path.insert(0, os.path.join("build-python", "lib"))
 
 import ten_vad_python
 
@@ -146,14 +135,15 @@ print(f"Is voice: {is_voice}")
 - `ten_vad_demo.py` - Python usage example
 - `ten_vad_python.cc` - pybind11 wrapper
 
-Python usage example requires these files on ARM64 with Python 3.12.
+Python usage example requires these files for ARM64 with Python 3.12.
 ```console
-examples_onnx
+examples_onnx/build-python
 ├── lib
 │   └── ten_vad_python.cpython-312-aarch64-linux-gnu.so
-├── onnx_model
+├── onnx_model -> ../../src/onnx_model
 │   └── ten-vad.onnx
-└──ten_vad_demo.py
+├── ten_vad_demo.py
+└── venv/
 ```
 
 For x64 (x86_64) architecture build.

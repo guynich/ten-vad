@@ -17,38 +17,46 @@ if ! command -v cmake &> /dev/null; then
     exit 1
 fi
 
+# Create build directory
+rm -rf build-python
+mkdir build-python
+
 # Create virtual environment if not in one
 if [[ -z "${VIRTUAL_ENV:-}" ]]; then
-    if [[ ! -d "venv" ]]; then
+    if [[ ! -d "build-python/venv" ]]; then
         echo "Creating virtual environment..."
-        python3 -m venv venv
+        python3 -m venv build-python/venv
     fi
     echo "Activating virtual environment..."
-    source venv/bin/activate
+    source build-python/venv/bin/activate
 fi
 
 # Install pybind11 if needed
 echo "Installing pybind11 and numpy..."
 pip install -q pybind11 numpy
 
-# Create ONNX model symlink
+# Setup build directory
+cd build-python
+cp ../CMakeLists-python.txt ./CMakeLists.txt
+
+# Create ONNX model symlink in build directory
 if [[ ! -e "onnx_model" ]]; then
     echo "Creating ONNX model symlink..."
-    ln -sf ../src/onnx_model .
+    ln -sf ../../src/onnx_model .
 fi
 
 # Build with CMake
 echo "Building with CMake..."
-rm -rf build-python
-mkdir build-python
-cd build-python
-cp ../CMakeLists-python.txt ./CMakeLists.txt
 cmake .
 make -j$(nproc)
 
-# Move module to lib directory for better organization
-mkdir -p ../lib
-mv ten_vad_python*.so ../lib/
+# Move module to lib directory within build-python
+mkdir -p lib
+mv ten_vad_python*.so lib/
+
+# Copy demo script to build-python for easy testing
+cp ../ten_vad_demo.py .
 cd ..
 
 echo "Build complete."
+echo "All artifacts in: build-python/"
