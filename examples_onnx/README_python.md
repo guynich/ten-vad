@@ -125,6 +125,18 @@ Conclusion: these tiny differences will not have any functional impact in real
 VAD use cases.  The Python extension module provides a faithful, high-quality
 interface to the TEN VAD C/C++ library.
 
+### Realtime factor (RTF) comparison
+
+One shot test on ARM CPU (Orange Pi 5 8-core ARM64 RockChip RK3588S).
+
+| Method                  | Time took (ms) | Audio (ms) |   RTF    |
+|-------------------------|:--------------:|:----------:|:--------:|
+| C demo                  |      74.0      |    7631    | 0.009697 |
+| Python extension module |     192.5      |    7631    | 0.025222 |
+
+The C demo is significantly faster (2.6x) than the Python extension module
+demo.  For latency critical application, choose compiled C.
+
 ## Python API example
 
 ```python
