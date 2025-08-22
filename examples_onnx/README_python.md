@@ -26,7 +26,7 @@ Download for your architecture to your home directory:
 This is automated with these environment variables.  Additional testing done
 with `ONNX_VER=1.17.1`.
  ```bash
-ARCH=$(uname -m) && echo "Architecture: $ARCH"
+ARCH=$(uname -m) && if [ "$ARCH" = "x86_64" ]; then ARCH="x64"; fi
 ONNX_VER=1.22.0
 
 cd
