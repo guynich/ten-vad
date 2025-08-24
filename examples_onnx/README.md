@@ -7,6 +7,12 @@ Runtime support. Follow the setup guide below to get started from scratch.
 
 Follow these steps in order to set up your environment from nothing.
 
+Test environments used for preparing this README.
+* ONNX Runtime 1.22.0
+* Python 3.12
+* Linux: Ubuntu 24.04 LTS on ARM64 (native) on x86_64 (VM)
+* macOS: Sequoia 15.6 on x86_64
+
 ### Step 1: Install System Dependencies
 
 **Linux**
@@ -74,7 +80,7 @@ cd cpp
 ./build-and-deploy-linux.sh --ort-path ~/onnxruntime-linux-$ARCH-$ONNX_VER
 ```
 
-**Output** on ARM64: `cpp/build-linux/x64/ten_vad_demo`
+**Output**: `cpp/build-linux/x64/ten_vad_demo`
 
 #### Python Extension Module
 Build a Python extension module with pybind11 bindings.
@@ -84,7 +90,9 @@ cd python
 ./build-and-deploy-linux.sh --ort-path ~/onnxruntime-linux-$ARCH-$ONNX_VER
 ```
 
-**Output**: `python/build-linux/lib/ten_vad_python.cpython*.so`
+**Output** on ARM64: `python/build-linux/lib/ten_vad_python.cpython-312-aarch64-linux-gnu.so`
+
+**Output** on X86_64: `python/build-linux/lib/ten_vad_python.cpython-312-x86_64-linux-gnu.so`
 
 ### macOS
 
