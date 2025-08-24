@@ -51,7 +51,7 @@ cd ten-vad/examples_onnx
 ./build-and-deploy-linux.sh --ort-path ~/onnxruntime-linux-$ARCH-$ONNX_VER
 ```
 
-Note: Build artifacts are now organized in `python/build-linux/` subdirectory.
+Note: Build artifacts are now organized in `python/build-linux/` subdirectory on Linux and `python/build-macos/` on macOS.
 
 The Python build script automatically:
 - Creates virtual environment in `venv/` with pybind11 and numpy
@@ -59,7 +59,7 @@ The Python build script automatically:
 - Builds Python extension module in `lib/` folder with CMake
 - Creates necessary symlink to ONNX model file in `onnx_model/`
 - Copies demo script to build directory for easy testing
-- All artifacts are consolidated in `python/build-linux/`
+- All artifacts are consolidated in `python/build-linux/` (Linux) or `python/build-macos/` (macOS)
 
 Auto-detection paths for ONNX Runtime.
 - x86_64: `$HOME/onnxruntime-linux-x64-1.22.0`
@@ -68,7 +68,8 @@ For a different ONNX Runtime versions, use `--ort-path` option.
 
 Inspect the Python extension module.
 ```bash
-ls python/build-linux/lib/
+ls python/build-linux/lib/  # Linux
+ls python/build-macos/lib/  # macOS
 ```
 ```console
 ten_vad_python.cpython-312-aarch64-linux-gnu.so
@@ -76,7 +77,8 @@ ten_vad_python.cpython-312-aarch64-linux-gnu.so
 
 Test the import in the build directory.
 ```bash
-cd python/build-linux
+cd python/build-linux  # Linux
+cd python/build-macos  # macOS
 python3 -c 'import sys; sys.path.insert(0, "lib"); import ten_vad_python; print("Import success!")'
 ```
 
@@ -86,7 +88,8 @@ Runs from the build directory.  The demo requires `numpy`, which is already
 installed in the virtual environment created by the build script.
 ```bash
 cd
-cd ten-vad/examples_onnx/python/build-linux
+cd ten-vad/examples_onnx/python/build-linux  # Linux
+cd ten-vad/examples_onnx/python/build-macos  # macOS
 source ./venv/bin/activate
 
 python3 ten_vad_demo.py ../../../examples/s0724-s0730.wav out-python.txt
@@ -100,7 +103,7 @@ python3 ten_vad_demo.py ../../../examples/s0724-s0730.wav out-python-threshold.t
 ### Porting the demo
 
 Create a new folder and copy three artifacts.
-* `lib/` folder from `python/build-linux`
+* `lib/` folder from `python/build-linux` (Linux) or `python/build-macos` (macOS)
 * `onnx_model/` folder from `src`
 * `ten_vad_demo.py` script from `examples_onnx`
 
@@ -155,10 +158,11 @@ import sys
 import os
 import numpy as np  # For audio handling
 
-# Add lib directory to Python path (from python/build-linux/ directory)
+# Add lib directory to Python path (from python/build-linux/ or python/build-macos/ directory)
 sys.path.insert(0, "lib")
 # Or from examples_onnx/ directory:
-# sys.path.insert(0, os.path.join("python", "build-linux", "lib"))
+# sys.path.insert(0, os.path.join("python", "build-linux", "lib"))  # Linux
+# sys.path.insert(0, os.path.join("python", "build-macos", "lib"))   # macOS
 
 import ten_vad_python
 
@@ -183,7 +187,8 @@ print(f"Is voice: {is_voice}")
 Python usage example `ten_vad_demo.py` requires the extracted ONNX Runtime
 folder and these files to run on Linux ARM64 with Python 3.12.
 ```console
-examples_onnx/python/build-linux
+examples_onnx/python/build-linux  # Linux
+examples_onnx/python/build-macos  # macOS
 ├── lib
 │   └── ten_vad_python.cpython-312-aarch64-linux-gnu.so
 ├── onnx_model -> ../../../src/onnx_model

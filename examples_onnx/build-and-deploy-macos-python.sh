@@ -9,6 +9,6 @@
 set -e
 
 echo "Building Python bindings on macOS..."
-echo "Note: Build artifacts will be in python/build-macos-python/"
+echo "Note: Build artifacts will be in python/build-macos/"
 cd python
-exec ./build-and-deploy-macos-python.sh "$@"
+exec ./build-and-deploy-macos.sh "$@"

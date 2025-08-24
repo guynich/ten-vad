@@ -37,8 +37,8 @@ if ! command -v cmake &> /dev/null; then
 fi
 
 # Create build directory
-rm -rf build-macos-python
-mkdir build-macos-python
+rm -rf build-macos
+mkdir build-macos
 
 # Use the user's preferred Python (respects pyenv, etc.)
 if command -v pyenv >/dev/null 2>&1; then
@@ -54,12 +54,12 @@ $USER_PYTHON --version
 
 # Create virtual environment if not in one
 if [[ -z "${VIRTUAL_ENV:-}" ]]; then
-    if [[ ! -d "build-macos-python/venv" ]]; then
+    if [[ ! -d "build-macos/venv" ]]; then
         echo "Creating virtual environment with user's Python..."
-        $USER_PYTHON -m venv build-macos-python/venv
+        $USER_PYTHON -m venv build-macos/venv
     fi
     echo "Activating virtual environment..."
-    source build-macos-python/venv/bin/activate
+    source build-macos/venv/bin/activate
 fi
 
 # Install pybind11 if needed
@@ -67,7 +67,7 @@ echo "Installing pybind11 and numpy..."
 pip install -q pybind11 numpy
 
 # Setup build directory
-cd build-macos-python
+cd build-macos
 cp ../CMakeLists.txt ./CMakeLists.txt
 
 # Create ONNX model symlink in build directory
@@ -90,11 +90,11 @@ else
 fi
 make -j$(sysctl -n hw.ncpu)
 
-# Move module to lib directory within build-macos-python
+# Move module to lib directory within build-macos
 mkdir -p lib
 mv ten_vad_python*.so lib/
 
-# Copy demo script to build-macos-python for easy testing
+# Copy demo script to build-macos for easy testing
 cp ../../ten_vad_demo.py .
 
 python3 ./ten_vad_demo.py ../../../examples/s0724-s0730.wav out-python.txt
@@ -103,4 +103,4 @@ deactivate
 cd ..
 
 echo "Build complete."
-echo "All artifacts in: python/build-macos-python/"
+echo "All artifacts in: python/build-macos/"
