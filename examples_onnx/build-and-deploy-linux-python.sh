@@ -9,6 +9,6 @@
 set -e
 
 echo "Building Python bindings..."
-echo "Note: Build artifacts will be in python/build-linux-python/"
+echo "Note: Build artifacts will be in python/build-linux/"
 cd python
-exec ./build-and-deploy-linux-python.sh "$@"
+exec ./build-and-deploy-linux.sh "$@"

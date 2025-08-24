@@ -1,4 +1,4 @@
-TODO: update for separation of concerns: macOS and Linux.
+TODO: update for separation of concerns: macOS (Python) and Linux (CPP or Python).
 
 TEN VAD Python ONNX example
 
@@ -48,10 +48,10 @@ The extracted ONNX Runtime folder is used for the following build and demo.
 
 ```bash
 cd ten-vad/examples_onnx
-./build-and-deploy-linux-python.sh --ort-path ~/onnxruntime-linux-$ARCH-$ONNX_VER
+./build-and-deploy-linux.sh --ort-path ~/onnxruntime-linux-$ARCH-$ONNX_VER
 ```
 
-Note: Build artifacts are now organized in `python/build-linux-python/` subdirectory.
+Note: Build artifacts are now organized in `python/build-linux/` subdirectory.
 
 The Python build script automatically:
 - Creates virtual environment in `venv/` with pybind11 and numpy
@@ -59,7 +59,7 @@ The Python build script automatically:
 - Builds Python extension module in `lib/` folder with CMake
 - Creates necessary symlink to ONNX model file in `onnx_model/`
 - Copies demo script to build directory for easy testing
-- All artifacts are consolidated in `python/build-linux-python/`
+- All artifacts are consolidated in `python/build-linux/`
 
 Auto-detection paths for ONNX Runtime.
 - x86_64: `$HOME/onnxruntime-linux-x64-1.22.0`
@@ -68,7 +68,7 @@ For a different ONNX Runtime versions, use `--ort-path` option.
 
 Inspect the Python extension module.
 ```bash
-ls python/build-linux-python/lib/
+ls python/build-linux/lib/
 ```
 ```console
 ten_vad_python.cpython-312-aarch64-linux-gnu.so
@@ -76,7 +76,7 @@ ten_vad_python.cpython-312-aarch64-linux-gnu.so
 
 Test the import in the build directory.
 ```bash
-cd python/build-linux-python
+cd python/build-linux
 python3 -c 'import sys; sys.path.insert(0, "lib"); import ten_vad_python; print("Import success!")'
 ```
 
@@ -86,7 +86,7 @@ Runs from the build directory.  The demo requires `numpy`, which is already
 installed in the virtual environment created by the build script.
 ```bash
 cd
-cd ten-vad/examples_onnx/python/build-linux-python
+cd ten-vad/examples_onnx/python/build-linux
 source ./venv/bin/activate
 
 python3 ten_vad_demo.py ../../../examples/s0724-s0730.wav out-python.txt
@@ -100,7 +100,7 @@ python3 ten_vad_demo.py ../../../examples/s0724-s0730.wav out-python-threshold.t
 ### Porting the demo
 
 Create a new folder and copy three artifacts.
-* `lib/` folder from `python/build-linux-python`
+* `lib/` folder from `python/build-linux`
 * `onnx_model/` folder from `src`
 * `ten_vad_demo.py` script from `examples_onnx`
 
@@ -155,10 +155,10 @@ import sys
 import os
 import numpy as np  # For audio handling
 
-# Add lib directory to Python path (from python/build-linux-python/ directory)
+# Add lib directory to Python path (from python/build-linux/ directory)
 sys.path.insert(0, "lib")
 # Or from examples_onnx/ directory:
-# sys.path.insert(0, os.path.join("python", "build-linux-python", "lib"))
+# sys.path.insert(0, os.path.join("python", "build-linux", "lib"))
 
 import ten_vad_python
 
@@ -175,7 +175,7 @@ print(f"Is voice: {is_voice}")
 
 ## Files
 
-- `build-and-deploy-linux-python.sh` - Build script (wrapper in root, actual in python/)
+- `build-and-deploy-linux.sh` - Build script (wrapper in root, actual in python/)
 - `python/CMakeLists.txt` - Python extension module CMake configuration
 - `ten_vad_demo.py` - Python usage example
 - `ten_vad_python.cc` - pybind11 wrapper
@@ -183,7 +183,7 @@ print(f"Is voice: {is_voice}")
 Python usage example `ten_vad_demo.py` requires the extracted ONNX Runtime
 folder and these files to run on Linux ARM64 with Python 3.12.
 ```console
-examples_onnx/python/build-linux-python
+examples_onnx/python/build-linux
 ├── lib
 │   └── ten_vad_python.cpython-312-aarch64-linux-gnu.so
 ├── onnx_model -> ../../../src/onnx_model

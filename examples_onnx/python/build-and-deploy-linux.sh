@@ -37,8 +37,8 @@ if ! command -v cmake &> /dev/null; then
 fi
 
 # Create build directory
-rm -rf build-linux-python
-mkdir build-linux-python
+rm -rf build-linux
+mkdir build-linux
 
 # Use the user's preferred Python (respects pyenv, etc.)
 if command -v pyenv >/dev/null 2>&1; then
@@ -54,12 +54,12 @@ $USER_PYTHON --version
 
 # Create virtual environment if not in one
 if [[ -z "${VIRTUAL_ENV:-}" ]]; then
-    if [[ ! -d "build-linux-python/venv" ]]; then
+    if [[ ! -d "build-linux/venv" ]]; then
         echo "Creating virtual environment with user's Python..."
-        $USER_PYTHON -m venv build-linux-python/venv
+        $USER_PYTHON -m venv build-linux/venv
     fi
     echo "Activating virtual environment..."
-    source build-linux-python/venv/bin/activate
+    source build-linux/venv/bin/activate
 fi
 
 # Install pybind11 if needed
@@ -67,7 +67,7 @@ echo "Installing pybind11 and numpy..."
 pip install -q pybind11 numpy
 
 # Setup build directory
-cd build-linux-python
+cd build-linux
 cp ../CMakeLists.txt ./CMakeLists.txt
 
 # Create ONNX model symlink in build directory
@@ -90,11 +90,11 @@ else
 fi
 make -j$(nproc)
 
-# Move module to lib directory within build-linux-python
+# Move module to lib directory within build-linux
 mkdir -p lib
 mv ten_vad_python*.so lib/
 
-# Copy demo script to build-linux-python for easy testing
+# Copy demo script to build-linux for easy testing
 cp ../../ten_vad_demo.py .
 
 python3 ./ten_vad_demo.py ../../../examples/s0724-s0730.wav out-python.txt
@@ -103,4 +103,4 @@ deactivate
 cd ..
 
 echo "Build complete."
-echo "All artifacts in: python/build-linux-python/"
+echo "All artifacts in: python/build-linux/"
