@@ -20,18 +20,17 @@ if [[ ! -d "$ORT_ROOT" || ! -d "$ORT_ROOT/lib" || ! -d "$ORT_ROOT/include" ]]; t
     exit 1
 fi
 
-arch=x64
-build_dir=build-linux/$arch
+build_dir=build-linux
 rm -rf $build_dir
 mkdir -p $build_dir
 cd $build_dir
 
 # Step 1: Build the demo
-cmake ../../ -DORT_ROOT="$ORT_ROOT"
+cmake ../ -DORT_ROOT="$ORT_ROOT"
 cmake --build . --config Release
 
 # Step 2: Run the demo
-ln -s ../../../../src/onnx_model/
-./ten_vad_demo ../../../../examples/s0724-s0730.wav out.txt
+ln -s ../../../src/onnx_model/
+./ten_vad_demo ../../../examples/s0724-s0730.wav out.txt
 
 cd ../../

@@ -80,7 +80,7 @@ cd cpp
 ./build-and-deploy-linux.sh --ort-path ~/onnxruntime-linux-$ARCH-$ONNX_VER
 ```
 
-**Output**: `cpp/build-linux/x64/ten_vad_demo`
+**Output**: `cpp/build-linux/ten_vad_demo`
 
 #### Python Extension Module
 Build a Python extension module with pybind11 bindings.
