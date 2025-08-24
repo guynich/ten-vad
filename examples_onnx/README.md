@@ -43,7 +43,7 @@ tar -xzf onnxruntime-osx-$ARCH-$ONNX_VER.tgz
 
 Delete the `tgz` file if needed.
 
-#### ONNX Runtime v1.22.0 packages
+#### ONNX Runtime v1.22.0 package folders
 
 | Platform | Architecture               | Package Name                       |
 |----------|----------------------------|------------------------------------|
@@ -56,7 +56,7 @@ Delete the `tgz` file if needed.
 
 ## 🚀 Build Instructions
 
-First navigate into the cloned repo.
+First navigate into the cloned TEN VAD repo.
 ```bash
 cd
 cd ten-vad/examples_onnx
@@ -74,17 +74,17 @@ cd cpp
 ./build-and-deploy-linux.sh --ort-path ~/onnxruntime-linux-$ARCH-$ONNX_VER
 ```
 
-**Output**: `cpp/build-linux/x64/ten_vad_demo`
+**Output** on ARM64: `cpp/build-linux/x64/ten_vad_demo`
 
 #### Python Extension Module
 Build a Python extension module with pybind11 bindings.
 
 ```bash
 cd python
-./build-and-deploy-linux-python.sh --ort-path ~/onnxruntime-linux-$ARCH-$ONNX_VER
+./build-and-deploy-linux.sh --ort-path ~/onnxruntime-linux-$ARCH-$ONNX_VER
 ```
 
-**Output**: `python/build-linux-python/lib/ten_vad_python.*.so`
+**Output**: `python/build-linux/lib/ten_vad_python.cpython*.so`
 
 ### macOS
 
