@@ -15,4 +15,4 @@ examples/out.txt
 .DS_Store
 # Python extension module for TEN VAD C++/C and ONNX runtime.
 examples_onnx/build-linux-python
-examples_onnx/build-macos-python
+examples_onnx/python/build-macos-python

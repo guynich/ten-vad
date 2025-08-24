@@ -12,12 +12,23 @@ set(CMAKE_CXX_STANDARD 14)
 
 # Detect architecture and set ONNX Runtime path
 execute_process(COMMAND uname -m OUTPUT_VARIABLE ARCH OUTPUT_STRIP_TRAILING_WHITESPACE)
-if(ARCH STREQUAL "x86_64")
-    set(ORT_DEFAULT "$ENV{HOME}/onnxruntime-linux-x64-1.22.0")
-elseif(ARCH STREQUAL "aarch64")
-    set(ORT_DEFAULT "$ENV{HOME}/onnxruntime-linux-aarch64-1.22.0")
+if(APPLE)
+    if(ARCH STREQUAL "x86_64")
+        set(ORT_DEFAULT "$ENV{HOME}/onnxruntime-osx-x64-1.22.0")
+    elseif(ARCH STREQUAL "arm64")
+        set(ORT_DEFAULT "$ENV{HOME}/onnxruntime-osx-arm64-1.22.0")
+    else()
+        message(FATAL_ERROR "Unsupported macOS architecture: ${ARCH}")
+    endif()
 else()
-    message(FATAL_ERROR "Unsupported architecture: ${ARCH}")
+    # Linux
+    if(ARCH STREQUAL "x86_64")
+        set(ORT_DEFAULT "$ENV{HOME}/onnxruntime-linux-x64-1.22.0")
+    elseif(ARCH STREQUAL "aarch64")
+        set(ORT_DEFAULT "$ENV{HOME}/onnxruntime-linux-aarch64-1.22.0")
+    else()
+        message(FATAL_ERROR "Unsupported Linux architecture: ${ARCH}")
+    endif()
 endif()
 
 if(NOT DEFINED ORT_ROOT)
@@ -39,9 +50,9 @@ else()
 endif()
 
 # Build Python module
-get_filename_component(TEN_VAD_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../.. ABSOLUTE)
+get_filename_component(TEN_VAD_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../../.. ABSOLUTE)
 pybind11_add_module(ten_vad_python
-    ../ten_vad_python.cc
+    ../../ten_vad_python.cc
     ${TEN_VAD_ROOT}/src/ten_vad.cc
     ${TEN_VAD_ROOT}/src/aed.cc
     ${TEN_VAD_ROOT}/src/biquad.cc
@@ -54,6 +65,13 @@ pybind11_add_module(ten_vad_python
 target_include_directories(ten_vad_python PRIVATE
     ${TEN_VAD_ROOT}/include ${TEN_VAD_ROOT}/src ${ORT_ROOT}/include)
 target_link_directories(ten_vad_python PRIVATE ${ORT_ROOT}/lib)
-target_link_libraries(ten_vad_python PRIVATE onnxruntime)
-set_target_properties(ten_vad_python PROPERTIES
-    INSTALL_RPATH "${ORT_ROOT}/lib" BUILD_WITH_INSTALL_RPATH TRUE)
+
+if(APPLE)
+    target_link_libraries(ten_vad_python PRIVATE "${ORT_ROOT}/lib/libonnxruntime.dylib")
+    set_target_properties(ten_vad_python PROPERTIES
+        INSTALL_RPATH "${ORT_ROOT}/lib" BUILD_WITH_INSTALL_RPATH TRUE)
+else()
+    target_link_libraries(ten_vad_python PRIVATE onnxruntime)
+    set_target_properties(ten_vad_python PROPERTIES
+        INSTALL_RPATH "${ORT_ROOT}/lib" BUILD_WITH_INSTALL_RPATH TRUE)
+endif()
