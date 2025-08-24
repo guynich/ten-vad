@@ -108,6 +108,36 @@ cd python
 
 **Output**: `python/build-macos/lib/ten_vad_python.*.so`
 
+## Demo Usage
+
+### C++ Demo
+From the build directory, run the demo executable:
+
+```bash
+# Linux
+cd cpp/build-linux
+./ten_vad_demo ../../../examples/s0724-s0730.wav out-cpp.txt
+```
+
+### Python Extension Module
+From the build directory, run the Python demo:
+
+```bash
+# Linux
+cd python/build-linux
+python3 ten_vad_demo.py ../../../examples/s0724-s0730.wav out-python.txt
+
+# macOS
+cd python/build-macos
+python3 ten_vad_demo.py ../../../examples/s0724-s0730.wav out-python.txt
+
+# With custom threshold on either Linux or macOS.
+python3 ten_vad_demo.py ../../../examples/s0724-s0730.wav out-custom.txt --threshold 0.6
+```
+
+**Note**: Both demos process the same input WAV file and output frames where
+voice activity is detected.
+
 ## 📊 Performance Comparison
 
 ### Output Comparison of Python Extension Module and Compiled C
@@ -185,7 +215,6 @@ examples_onnx/
 ```
 
 ## Build notes
-
 
 ### Environment Detection
 - **Python Version**: Automatically uses your active Python (supports pyenv)
