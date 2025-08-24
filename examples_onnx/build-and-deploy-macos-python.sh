@@ -5,7 +5,7 @@
 #  Licensed under the Apache License, Version 2.0, with certain conditions.
 #  Refer to the "LICENSE" file in the root directory for more information.
 #
-# Simple CMake build script for TEN VAD Python bindings
+# Simple CMake build script for TEN VAD Python bindings on macOS.
 
 set -e
 
