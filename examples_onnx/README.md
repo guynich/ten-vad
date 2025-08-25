@@ -10,8 +10,8 @@ Follow these steps in order to set up your environment from nothing.
 Test environments used for preparing this README.
 * ONNX Runtime 1.22.0
 * Python 3.12
-* Linux: Ubuntu 24.04 LTS on ARM64 (native) on x86_64 (VM)
-* macOS: Sequoia 15.6 on x86_64
+* Linux: Ubuntu 24.04 LTS on ARM64 (native) and x86_64 (VM)
+* macOS: Sequoia 15.6 on arm64 (native) and x86_64 (native)
 
 ### Step 1: Install System Dependencies
 
@@ -56,9 +56,7 @@ Delete the `tgz` file if needed.
 | Linux    | x86_64                     | `onnxruntime-linux-x64-1.22.0`     |
 | Linux    | ARM64                      | `onnxruntime-linux-aarch64-1.22.0` |
 | macOS    | Intel                      | `onnxruntime-osx-x86_64-1.22.0`    |
-| macOS    | Apple Silicon <sup>1</sup> | `onnxruntime-osx-arm64-1.22.0`     |
-
-<sup>1</sup> not tested.
+| macOS    | Apple Silicon              | `onnxruntime-osx-arm64-1.22.0`     |
 
 ## 🚀 Build Instructions
 
