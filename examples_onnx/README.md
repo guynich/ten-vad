@@ -22,6 +22,8 @@ sudo apt install cmake build-essential python3-venv curl
 ```
 
 **macOS**
+Install brew from [brew.sh](https://brew.sh).  In a new terminal session install
+`cmake`.
 ```bash
 brew install cmake
 ```
