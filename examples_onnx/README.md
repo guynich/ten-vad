@@ -96,6 +96,15 @@ cd python
 
 ### macOS
 
+#### C++ Demo
+Build a standalone C++ executable that uses ONNX Runtime directly.
+```bash
+cd cpp
+./build-and-deploy-macos.sh --ort-path ~/onnxruntime-osx-$ARCH-$ONNX_VER
+```
+
+**Output**: `cpp/build-macos/ten_vad_demo`
+
 #### Python Extension Module
 
 Build a Python extension module optimized for macOS (supports both Intel and
@@ -116,6 +125,10 @@ From the build directory, run the demo executable:
 ```bash
 # Linux
 cd cpp/build-linux
+./ten_vad_demo ../../../examples/s0724-s0730.wav out-cpp.txt
+
+# macOS
+cd cpp/build-macos
 ./ten_vad_demo ../../../examples/s0724-s0730.wav out-cpp.txt
 ```
 
@@ -203,9 +216,10 @@ print(f"Is voice: {is_voice}")
 examples_onnx/
 ├── README.md                          # This file
 ├── CMakeLists.txt                     # Root build configuration
-├── cpp/                               # C++ demo (Linux only)
+├── cpp/                               # C++ demo (Linux + macOS)
 │   ├── CMakeLists.txt
-│   └── build-and-deploy-linux.sh
+│   ├── build-and-deploy-linux.sh
+│   └── build-and-deploy-macos.sh
 ├── python/                            # Python extension (Linux + macOS)
 │   ├── CMakeLists.txt
 │   ├── build-and-deploy-linux-python.sh

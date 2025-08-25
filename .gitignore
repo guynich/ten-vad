@@ -5,6 +5,7 @@ examples/build-linux/
 examples/build-windows/
 examples/build-web/
 examples_onnx/cpp/build-linux
+examples_onnx/cpp/build-macos
 include/.DS_Store
 lib/.DS_Store
 examples/.DS_Store
