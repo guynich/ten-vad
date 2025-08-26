@@ -94,6 +94,21 @@ cd python
 
 **Output** on X86_64: `python/build-linux/lib/ten_vad_python.cpython-312-x86_64-linux-gnu.so`
 
+#### Python ctypes implementation
+
+Runs significantly faster than the Python Extension Module with dependencies on
+`ten-vad` repo source and `python/build*` scripts.
+
+First run a build script in `python` folder.
+
+Then deploy the ctypes implementation script - fails when build not available.
+```bash
+# Deploy ctypes implementation to build directories
+cd python
+./deploy_ctypes.sh
+```
+The script provides usage information.
+
 ### macOS
 
 #### C++ Demo
@@ -117,7 +132,15 @@ cd python
 
 **Output**: `python/build-macos/lib/ten_vad_python.*.so`
 
+#### Python ctypes implementation
+
+Follow the above section `Python ctypes implementation` - change the path names
+for macOS build.
+
 ## Demo Usage
+
+**Note**: All demos process the same input WAV file and output the
+voice activity detection probability and `is_voice` flag.
 
 ### C++ Demo
 From the build directory, run the demo executable:
@@ -147,67 +170,71 @@ source ./venv/bin/activate  # For numpy
 python3 ten_vad_demo.py ../../../examples/s0724-s0730.wav out-python.txt
 
 # With custom threshold on either Linux or macOS.
-python3 ten_vad_demo.py ../../../examples/s0724-s0730.wav out-custom.txt --threshold 0.6
+python3 ten_vad_demo.py ../../../examples/s0724-s0730.wav out-python-custom.txt --threshold 0.6
 ```
 
-#### Python ctypes Implementation
+### Python ctypes Implementation
+The cytypes implementation runs significantly faster than the Python Extension
+Module.  Examples are shared in Performance comparison below.
 
-Build and deploy the ctypes wrapper.  Initial tests on macOS (Intel) are ~10%
-faster than Python extension module.
+This implementation has dependencies on `ten-vad` repo and Python extension
+module build folder.
 
+From the build directory, run the Python ctypes demo:
 ```bash
-# Deploy ctypes implementation to build directories
-cd ../../examples_onnx
-./deploy_ctypes.sh
-
 # Use from build directory with virtual environment for numpy.
-cd python/build-macos  # or python/build-linux
+cd python/build-linux  # or build-macos
 source ./venv/bin/activate  # For numpy
-python3 ten_vad_demo_ctypes.py ../../../examples/s0724-s0730.wav out-ctypes.txt
+python3 ten_vad_demo_ctypes.py ../../../examples/s0724-s0730.wav out-python-ctypes.txt
 
 # With custom threshold
-python3 ten_vad_demo_ctypes.py ../../../examples/s0724-s0730.wav out-ctypes.txt --threshold 0.6
+python3 ten_vad_demo_ctypes.py ../../../examples/s0724-s0730.wav out-python-ctypes-custome.txt --threshold 0.6
 ```
-
-**Note**: All demos process the same input WAV file and output frames where
-voice activity is detected.
 
 ## 📊 Performance Comparison
 
-### Output Comparison of Python Extension Module and Compiled C
+### Output Comparison of Python methods and Compiled C
 
-The C++ demo and Python extension module process the same WAV file with nearly
-identical results:
+The C++ demo and Python extension module and Python ctypes process the same WAV
+file with nearly identical results:
 
 **Accuracy Analysis:**
 1. **Voice Activity Detection**: `is_voice` flags are identical for all 476 frames
-2. **Probability Values**: 440 frames (92.4%) have identical probabilities; 36 frames (7.6%) differ only in the 6th decimal place
+2. **Probability Values** compared wih C++ demo:
 
+   a. Python ctypes achieves **perfect numerical precision** matching probability values exactly (476 frames, 100% identical)
+
+   b. Python extension module: 440 frames (92.4%) have identical probabilities; 36 frames (7.6%) differ only in the 6th decimal place
+
+3. **Precision**: For Python extension module in separate testing, the differences are in the 7th-8th decimal place (mean: 6 × 10⁻⁸, max: 5.9 × 10⁻⁷)
+
+Selected examples for Python extension module:
 ```console
 Python:  [35] 0.728302, 1    vs    C: [35] 0.728301, 1    (diff: 0.000001)
 Python:  [42] 0.901945, 1    vs    C: [42] 0.901944, 1    (diff: 0.000001)
 Python:  [54] 0.585849, 1    vs    C: [54] 0.585848, 1    (diff: 0.000001)
 ```
 
-3. **Precision**: Differences are in the 7th-8th decimal place (mean: 6 × 10⁻⁸, max: 5.9 × 10⁻⁷)
-
-**Conclusion**: These tiny differences have no functional impact. The Python
-extension provides a faithful, high-quality interface to the TEN VAD C/C++
-library.
+**Conclusion**: These tiny differences have no functional impact.  Both the Python
+ctypes and the Python Extension Module provide faithful, high-quality
+interfaces to the TEN VAD C/C++ library.
 
 ### Real-time Factor (RTF) Comparison
 
-Performance test on ARM CPU (Orange Pi 5 8-core ARM64 RockChip RK3588S):
-
-TODO(guy): add ctypes
+Testing Ubuntu 24.04 running on ARM CPU (Orange Pi 5 8-core ARM64 RockChip
+RK3588S).
 
 | Method                  | Time (ms) | Audio (ms) |   RTF    |
 |-------------------------|:---------:|:----------:|:--------:|
 | C++ Demo                |   74.0    |    7631    | 0.009697 |
+| Python ctypes           |   98.9    |    7631    | 0.012960 |
 | Python Extension Module |   192.5   |    7631    | 0.025222 |
 
-The C++ demo is 2.6x faster than the Python extension module. For
-latency-critical applications, choose the compiled C++ version.
+These are single shot examples.  There is run-run variation.
+
+The C++ demo is 2.6x faster than the Python extension module. The ctypes demo is
+nearly 2x faster than the Python extension module.   For latency-critical
+applications, choose the compiled C++ version or Python ctypes.
 
 ## 🐍 Python Usage
 
@@ -235,7 +262,7 @@ print(f"Is voice: {is_voice}")
 
 ### ctypes Implementation
 
-Example for using the high-performance ctypes wrapper:
+Example for using the ctypes wrapper:
 
 ```python
 import sys
@@ -259,14 +286,14 @@ print(f"Is voice: {is_voice}")
 ```
 
 **Performance Benefits:**
-- **~10% faster** than pybind11 extension (based on initial macOS testing)
-- **More consistent timing** for real-time applications
+- **Nearly ~2x faster** than Python extension module (Linux ARM64 testing)
+- **Identical precision** to CPP demo
 - **Drop-in replacement** - same API as pybind11 version
 
 **Deployment Requirements:**
 - Copy `ten_vad_ctypes.py` to your project
 - Ensure TEN VAD framework is accessible (uses existing repo structure)
-- Use `./deploy_ctypes.sh` for automated deployment
+- Run Linux build for Python extension module then use `./deploy_ctypes.sh` for automated deployment
 
 ## 📁 Project Structure
 
@@ -278,15 +305,15 @@ examples_onnx/
 │   ├── CMakeLists.txt
 │   ├── build-and-deploy-linux.sh
 │   └── build-and-deploy-macos.sh
-├── python/                            # Python extension (Linux + macOS)
+├── python/                            # Python implementations (Linux + macOS)
 │   ├── CMakeLists.txt
-│   ├── build-and-deploy-linux-python.sh
-│   └── build-and-deploy-macos.sh
-├── ten_vad_demo.py                    # Python demo script (pybind11)
-├── ten_vad_python.cc                  # pybind11 wrapper
-├── ten_vad_ctypes.py                  # ctypes wrapper (performance optimized)
-├── ten_vad_demo_ctypes.py             # ctypes demo script
-├── deploy_ctypes.sh                   # Deploy ctypes to build directories
+│   ├── build-and-deploy-linux.sh
+│   ├── build-and-deploy-macos.sh
+│   ├── ten_vad_demo.py                # Python demo script (pybind11)
+│   ├── ten_vad_ctypes.py              # ctypes wrapper (performance optimized)
+│   ├── ten_vad_demo_ctypes.py         # ctypes demo script
+│   └── deploy_ctypes.sh               # Deploy ctypes to build directories
+└── ten_vad_python.cc                  # pybind11 wrapper
 
 ```
 
@@ -314,6 +341,6 @@ architecture.
 
 - [Main TEN VAD Repository](../../README.md)
 - [ONNX Runtime Releases](https://github.com/microsoft/onnxruntime/releases)
-- [TEN VAD Python Examples](ten_vad_demo.py)
+- [TEN VAD Python Examples](python/ten_vad_demo.py)
 
 ---
