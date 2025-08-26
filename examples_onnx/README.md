@@ -150,7 +150,26 @@ python3 ten_vad_demo.py ../../../examples/s0724-s0730.wav out-python.txt
 python3 ten_vad_demo.py ../../../examples/s0724-s0730.wav out-custom.txt --threshold 0.6
 ```
 
-**Note**: Both demos process the same input WAV file and output frames where
+#### Python ctypes Implementation
+
+Build and deploy the ctypes wrapper.  Initial tests on macOS (Intel) are ~10%
+faster than Python extension module.
+
+```bash
+# Deploy ctypes implementation to build directories
+cd ../../examples_onnx
+./deploy_ctypes.sh
+
+# Use from build directory with virtual environment for numpy.
+cd python/build-macos  # or python/build-linux
+source ./venv/bin/activate  # For numpy
+python3 ten_vad_demo_ctypes.py ../../../examples/s0724-s0730.wav out-ctypes.txt
+
+# With custom threshold
+python3 ten_vad_demo_ctypes.py ../../../examples/s0724-s0730.wav out-ctypes.txt --threshold 0.6
+```
+
+**Note**: All demos process the same input WAV file and output frames where
 voice activity is detected.
 
 ## 📊 Performance Comparison
@@ -179,6 +198,8 @@ library.
 ### Real-time Factor (RTF) Comparison
 
 Performance test on ARM CPU (Orange Pi 5 8-core ARM64 RockChip RK3588S):
+
+TODO(guy): add ctypes
 
 | Method                  | Time (ms) | Audio (ms) |   RTF    |
 |-------------------------|:---------:|:----------:|:--------:|
@@ -212,6 +233,41 @@ print(f"Voice probability: {probability:.6f}")
 print(f"Is voice: {is_voice}")
 ```
 
+### ctypes Implementation
+
+Example for using the high-performance ctypes wrapper:
+
+```python
+import sys
+import numpy as np
+
+# Add the ctypes module to path
+sys.path.insert(0, "python/build-macos")  # macOS
+# sys.path.insert(0, "python/build-linux")  # Linux
+
+import ten_vad_ctypes
+
+# Create VAD instance (same API as pybind11)
+vad = ten_vad_ctypes.VAD(hop_size=256, threshold=0.5)
+
+# Process audio frame (must be exactly hop_size samples)
+audio_frame = np.array([...], dtype=np.int16)  # 256 samples
+probability, is_voice = vad.process(audio_frame)
+
+print(f"Voice probability: {probability:.6f}")
+print(f"Is voice: {is_voice}")
+```
+
+**Performance Benefits:**
+- **~10% faster** than pybind11 extension (based on initial macOS testing)
+- **More consistent timing** for real-time applications
+- **Drop-in replacement** - same API as pybind11 version
+
+**Deployment Requirements:**
+- Copy `ten_vad_ctypes.py` to your project
+- Ensure TEN VAD framework is accessible (uses existing repo structure)
+- Use `./deploy_ctypes.sh` for automated deployment
+
 ## 📁 Project Structure
 
 ```
@@ -226,8 +282,12 @@ examples_onnx/
 │   ├── CMakeLists.txt
 │   ├── build-and-deploy-linux-python.sh
 │   └── build-and-deploy-macos.sh
-├── ten_vad_demo.py                    # Python demo script
-└── ten_vad_python.cc                  # pybind11 wrapper
+├── ten_vad_demo.py                    # Python demo script (pybind11)
+├── ten_vad_python.cc                  # pybind11 wrapper
+├── ten_vad_ctypes.py                  # ctypes wrapper (performance optimized)
+├── ten_vad_demo_ctypes.py             # ctypes demo script
+├── deploy_ctypes.sh                   # Deploy ctypes to build directories
+
 ```
 
 ## Build notes
