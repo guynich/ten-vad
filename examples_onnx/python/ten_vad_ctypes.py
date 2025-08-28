@@ -45,58 +45,45 @@ class VAD:
         """Load the appropriate shared library for the current platform."""
         script_dir = os.path.dirname(os.path.abspath(__file__))
 
-        # Determine library path based on platform
+        # Determine library name and expected locations based on platform
         if platform.system() == "Darwin":  # macOS
-            arch = platform.machine()
-            if arch != "x86_64":
-                arch = "arm64"
-
-                # Look for the built library in the expected locations
-            # When run from python/build-macos/ directory
+            lib_name = "libten_vad.dylib"
+            # Look for library in standard locations relative to script
             lib_paths = [
                 # Current directory (python/build-macos/)
-                "libten_vad.dylib",
+                f"{lib_name}",
                 # Lib subdirectory (python/build-macos/lib/)
-                "lib/libten_vad.dylib",
+                f"lib/{lib_name}",
                 # Parent directories for when run from examples_onnx/
-                "build-macos/libten_vad.dylib",
-                "cpp/build-macos/libten_vad.dylib",
-                "python/build-macos/libten_vad.dylib",
-                "python/build-macos/lib/libten_vad.dylib",
+                f"build-macos/{lib_name}",
+                f"cpp/build-macos/{lib_name}",
+                f"python/build-macos/{lib_name}",
+                f"python/build-macos/lib/{lib_name}",
                 # Absolute paths relative to script location
-                "../libten_vad.dylib",
-                "../../cpp/build-macos/libten_vad.dylib",
+                f"../{lib_name}",
+                f"../../cpp/build-macos/{lib_name}",
                 # Pre-built framework paths - adjust based on script location
                 "../../../lib/macOS/ten_vad.framework/Versions/A/ten_vad",  # From examples_onnx/
                 "../../../../lib/macOS/ten_vad.framework/Versions/A/ten_vad",  # From python/build-macos/
                 "../../lib/macOS/ten_vad.framework/Versions/A/ten_vad",  # From examples_onnx/python/
             ]
         elif platform.system() == "Linux":
-            arch = platform.machine()
-            if arch == "x86_64":
-                arch = "x64"
-
-            # When run from python/build-linux/ directory
+            lib_name = "libten_vad.so"
             lib_paths = [
-                # Current directory (python/build-linux/)
-                "libten_vad.so",
-                # Lib subdirectory (python/build-linux/lib/)
-                "lib/libten_vad.so",
-                # Parent directories for when run from examples_onnx/
-                "build-linux/libten_vad.so",
-                "cpp/build-linux/libten_vad.so",
-                "python/build-linux/libten_vad.so",
-                "python/build-linux/lib/libten_vad.so",
-                # Absolute paths relative to script location
-                "../libten_vad.so",
-                "../../cpp/build-linux/libten_vad.so",
-                # System library paths
-                f"../../../lib/Linux/{arch}/libten_vad.so",
+                # Current directory
+                lib_name,
+                # Standard lib subdirectory
+                f"lib/{lib_name}",
+                # Parent build directory (if run from python/build-linux/)
+                f"../{lib_name}",
+                f"../../cpp/build-linux/{lib_name}",
+                # System library path (only x86_64 available)
+                f"../../../lib/Linux/x64/{lib_name}"
             ]
         else:
             raise NotImplementedError(f"Unsupported platform: {platform.system()}")
 
-        # Try to load the library
+        # Try to load the library from the most likely locations first
         for lib_path in lib_paths:
             full_path = os.path.join(script_dir, lib_path)
             if os.path.exists(full_path):
@@ -108,7 +95,7 @@ class VAD:
                     print(f"Failed to load {full_path}: {e}")
                     continue
 
-        # If we get here, show all attempted paths for debugging
+        # If we get here, show attempted paths for debugging
         attempted_paths = [os.path.join(script_dir, path) for path in lib_paths]
         raise RuntimeError(
             f"Could not load TEN VAD library. Tried paths:\n"
